@@ -111,7 +111,7 @@ The preprocessing pipeline includes:
   -- Lead V2
 
 You can download and preprocess the dataset by running the notebook:
-`dataset_setup/dataset.ipynb`
+`data_setup/dataset.ipynb`
 
 # Evaluation Metrics
 
