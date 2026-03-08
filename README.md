@@ -65,7 +65,7 @@ Main libraries used in this project:
 
 # Workflow
 ## Baseline Model
-Notebook: notebooks/HeartDiseaseClassification_baseline.ipynb
+Notebook: `notebooks/HeartDiseaseClassification_baseline.ipynb`
 
 This notebook implements the **GRU baseline model** that processes ECG signals directly as time-series data.
 
@@ -79,7 +79,7 @@ Model configuration:
 ---
 
 ## CNN with Attention
-Notebook: notebooks/AlexNetAtt_Notebook.ipynb
+Notebook: `notebooks/AlexNetAtt_Notebook.ipynb`
 This notebook implements an **AlexNet-based CNN with self-attention layers** trained on ECG image representations.
 
 Signal transformations:
@@ -94,14 +94,13 @@ Each ECG record becomes a **9-channel image (3 leads × 3 transformations)**.
 
 ## Residual CNN Experiment
 
-Notebook: notebooks/ResidualCNN_SOTA.ipynb
+Notebook: `notebooks/ResidualCNN_SOTA.ipynb`
 
 This notebook explores a **Residual CNN architecture** as a potential improvement over the baseline models.
 
 ---
 
 # Preprocessing
-
 The preprocessing pipeline includes:
 
 1. Bandpass filtering (1–45 Hz Butterworth filter)
@@ -110,6 +109,10 @@ The preprocessing pipeline includes:
   -- Lead I
   -- Lead II
   -- Lead V2
+
+You can download and preprocess the dataset by running the notebook:
+`dataset_setup/dataset.ipynb`
+
 # Evaluation Metrics
 
 The models are evaluated using:
@@ -146,9 +149,10 @@ Generated outputs include:
 Launch Jupyter Notebook:
 Run the notebooks in this order:
 
-1. `HeartDiseaseClassification_baseline.ipynb`
-2. `AlexNetAtt_Notebook.ipynb`
-3. `ResidualCNN_SOTA.ipynb`
+1. `dataset.ipynb`
+2. `HeartDiseaseClassification_baseline.ipynb`
+3. `AlexNetAtt_Notebook.ipynb`
+4. `ResidualCNN_SOTA.ipynb`
 
 Each notebook contains the full workflow for preprocessing, training, and evaluation.
 
