@@ -105,7 +105,7 @@ The project investigates three input representation paradigms:
 | **Fusion GRU+2DCNN**| 1D + 2D | **Late-Fusion (SOTA)** | Parallel BiGRU (1D) and 2D CNN-CBAM branches |
 | **Transformer-Hybrid**| Raw 1D | Attention-based model | 1D-CNN + BiLSTM + Transformer Encoder |
 
-# Evaluation Metrics
+## Evaluation Metrics
 
 The models are evaluated using:
 
@@ -120,7 +120,7 @@ Sensitivity is emphasized since missing a disease (false negative) can have seri
 
 ---
 
-# Experimental Results
+## Experimental Results
 
 All models were evaluated using Macro-averaged metrics after per-class threshold tuning on the validation set.
 
