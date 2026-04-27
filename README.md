@@ -1,21 +1,23 @@
 # Multi-Label ECG Classification with Deep Learning
-This repository contains the implementation of a deep learning pipeline for multi-label ECG classification using the PTB-XL dataset. The project explores both time-series models (GRU) and image-based deep learning models (CNN) for detecting cardiovascular conditions from ECG signals.
+TThis repository provides a systematic deep learning benchmark for multi-label ECG classification. The project evaluates five diverse architectures across two major datasets (PTB-XL and Georgia) to detect four cardiac superclasses: Myocardial Infarction (MI), ST/T-wave changes (STTC), Conduction Disturbance (CD), and Hypertrophy (HYP).
 
-The main goal is to investigate whether transforming ECG signals into image representations can help convolutional neural networks capture structural patterns that may not be easily detected in raw time-series signals.
+Our research investigates three input representation paradigms:Raw 1D Time-Series: Directly processing the 12-lead ECG signal.2D STFT Spectrograms: Transforming signals into time-frequency representations.Hybrid/Fusion Approaches: Combining temporal (1D) and spectral (2D) features for enhanced performance
 
 
 # Dataset
 
-This project uses the **PTB-XL ECG dataset**, a large-scale publicly available ECG dataset released on PhysioNet.
+We utilize two publicly available 12-lead ECG datasets, resampled to **100 Hz** for consistency:
 
-PhysioNet dataset page:  
-[https://physionet.org/content/ptb-xl/](https://physionet.org/content/ptb-xl/1.0.1/)
+* **PTB-XL**: 21,837 records (10s duration). 
 
-Kaggle mirror:  
-[https://www.kaggle.com/datasets/khyeh0719/ptb-xl-dataset/data](https://www.kaggle.com/datasets/khyeh0719/ptb-xl-dataset/data)
+  * PhysioNet dataset page:  [https://physionet.org/content/ptb-xl/](https://physionet.org/content/ptb-xl/1.0.1/)
 
-The dataset contains more than 21,000 ECG recordings collected from nearly 19,000 patients and annotated by cardiologists.
-Due to size limitations, the dataset is not included in this repository.
+  * Kaggle mirror:  [https://www.kaggle.com/datasets/khyeh0719/ptb-xl-dataset/data](https://www.kaggle.com/datasets/khyeh0719/ptb-xl-dataset/data)
+* **Georgia 12-Lead ECG Challenge**: 10,344 records.
+  * Kaggle link: [https://www.kaggle.com/datasets/physionet/georgia-12lead-ecg-challenge-database](https://www.kaggle.com/datasets/physionet/georgia-12lead-ecg-challenge-database)
+
+
+Due to their size, the datasets is not included in this repository.
 
 # Classification Task
 
@@ -38,12 +40,24 @@ All experiments, preprocessing, training, and evaluation are implemented inside 
 
 # Installation
 
-## Clone the repository
+*  Clone the repository
 
 ```bash
-git clone https://github.com/<username>/HeartDiseaseClassification.git
+git clone https://github.com/CookiesAgent/HeartDiseaseClassification.git
 cd HeartDiseaseClassification
+pip install -r requirements.txt
 ```
+
+* Preprocessing:
+Run the notebooks in data_setup/ to prepare the datasets.
+
+* Training:
+Navigate to the respective dataset folder in Notebooks/ and run the model training notebooks (e.g., ECG_CRNN_PTB_XL.ipynb).
+
+
+* Explainability:
+Use the evaluation notebooks to generate Grad-CAM and Integrated Gradients visualizations, which highlight clinically relevant features like R-peaks and ST-segments
+
 
 # Dependencies 
 Dependencies
@@ -64,54 +78,32 @@ Main libraries used in this project:
 
 
 # Workflow
-## Baseline Model
-Notebook: `notebooks/HeartDiseaseClassification_baseline.ipynb`
 
-This notebook implements the **GRU baseline model** that processes ECG signals directly as time-series data.
+## Preprocessing
+Preprocessing Pipeline:
+- Bandpass filtering (1–45 Hz).
+- Z-score normalization.
+- NORM undersampling to address class imbalance.
+- Multi-label stratified 70/15/15 data split.
 
-Model configuration:
-- Two stacked GRU layers
-- Hidden dimension: 128
-- Dropout: 0.3
-- Optimizer: Adam
-- Batch size: 256
+You can download and preprocess the PTB_XL dataset by running the notebook:
+`data_setup/PTB_XL_dataset.ipynb`
 
----
+For working with Georgia dataset, run the notebook:
+`data_setup/Georgia_Preprocessing.ipynb`
 
-## CNN with Attention
-Notebook: `notebooks/AlexNetAtt_Notebook.ipynb`
-This notebook implements an **AlexNet-based CNN with self-attention layers** trained on ECG image representations.
+## Model Architectures
 
-Signal transformations:
+The project investigates three input representation paradigms:
 
-- Gramian Angular Field (GAF)
-- Recurrence Plot (RP)
-- Markov Transition Field (MTF)
-
-Each ECG record becomes a **9-channel image (3 leads × 3 transformations)**.
-
----
-
-## Residual CNN Experiment
-
-Notebook: `notebooks/ResidualCNN_SOTA.ipynb`
-
-This notebook explores a **Residual CNN architecture** as a potential improvement over the baseline models.
-
----
-
-# Preprocessing
-The preprocessing pipeline includes:
-
-1. Bandpass filtering (1–45 Hz Butterworth filter)
-2. Z-score normalization per ECG record
-3. Selection of ECG leads:
-  -- Lead I
-  -- Lead II
-  -- Lead V2
-
-You can download and preprocess the dataset by running the notebook:
-`data_setup/dataset.ipynb`
+| Model | Input Type | Description | Key Components |
+| :--- | :--- | :--- | :--- |
+| **Baseline GRU** | Raw 1D | Standard temporal model | 2-layer stacked GRU, Hidden Dim: 128 |
+| **ECG-CRNN** | Raw 1D | Convolutional Recurrent NN | SE-ResNet + BiLSTM |
+| **ResNet2D-ECG** | 2D STFT | Spectral-only model | ResNet-18 on 12-channel spectrograms |
+| **ResNet18-BiLSTM**| 2D STFT | Hybrid Spectral-Temporal | Pretrained ResNet-18 + BiLSTM + SE Attention |
+| **Fusion GRU+2DCNN**| 1D + 2D | **Late-Fusion (SOTA)** | Parallel BiGRU (1D) and 2D CNN-CBAM branches |
+| **Transformer-Hybrid**| Raw 1D | Attention-based model | 1D-CNN + BiLSTM + Transformer Encoder |
 
 # Evaluation Metrics
 
@@ -128,38 +120,49 @@ Sensitivity is emphasized since missing a disease (false negative) can have seri
 
 ---
 
-# Results
+# Experimental Results
 
-Model performance:
+All models were evaluated using Macro-averaged metrics after per-class threshold tuning on the validation set.
 
-| Model | Sensitivity | Specificity | Accuracy | F1 Score |
-|------|------|------|------|------|
-| GRU Baseline | 0.7534 | 0.8129 | 0.8001 | 0.6048 |
-| AlexNet + Attention | 0.7448 | 0.7651 | 0.7614 | 0.5915 |
+### PTB-XL Dataset Results
+| Model | Macro-F1 | Macro-AUC | Sensitivity | Specificity |
+| :--- | :---: | :---: | :---: | :---: |
+| **Fusion GRU+2DCNN** | **0.725** | **0.904** | 0.812 | 0.885 |
+| Transformer-Hybrid | 0.714 | 0.884 | 0.795 | 0.864 |
+| ResNet18-BiLSTM | 0.698 | 0.872 | 0.764 | 0.851 |
+| ECG-CRNN | 0.672 | 0.848 | 0.741 | 0.832 |
+| **Baseline GRU** | 0.605 | 0.821 | 0.753 | 0.813 |
 
-Generated outputs include:
+### Georgia Dataset Results
+| Model | Macro-F1 | Macro-AUC | Sensitivity | Specificity |
+| :--- | :---: | :---: | :---: | :---: |
+| **ECG-CRNN** | **0.732** | 0.838 | 0.801 | 0.824 |
+| **Fusion GRU+2DCNN** | 0.710 | **0.883** | 0.788 | 0.871 |
+| Transformer-Hybrid | 0.695 | 0.852 | 0.755 | 0.844 |
+| ResNet2D-ECG | 0.654 | 0.811 | 0.722 | 0.798 |
+
+
+Generated outputs also include:
 
 - training curves
 - confusion matrices
 - evaluation metrics
 - XAI visualizations
- They can be found for each model seperately in their respective notebooks.
+ They can be found for each model seperately in their respective notebooks as well as in Figures folder.
 
-# Running the Experiments
-Launch Jupyter Notebook:
-Run the notebooks in this order:
 
-1. `dataset.ipynb`
-2. `HeartDiseaseClassification_baseline.ipynb`
-3. `AlexNetAtt_Notebook.ipynb`
-4. `ResidualCNN_SOTA.ipynb`
-
-Each notebook contains the full workflow for preprocessing, training, and evaluation.
+Each notebook contains the full workflow for training and evaluation.
 
 # Authors
 
-Alimbek Alimbekov — Visualization and analytics  
-Aruzhan Nurmanova — CNN model training  
-Lailim-Adina Kozhamkulova — Data preprocessing  
-Baurzhan Kumarioldanov — Baseline model development  
-Dulat Rakhymkul — Baseline model training
+Dulat Rakhymkul - Target model training & tuning (ResNet2D, Fusion, LSTM Transfer)
+
+Baurzhan Kumarioldanov - Baseline model development & Transformer-Hybrid architecture
+
+Aruzhan Nurmanova - Baseline ECG-CRNN training & tuning
+
+Alimbek Alimbekov - Visualization, analytics & explainability analysis (XAI)
+
+Lailim-Adina Kozhamkulova - Georgia ECG preprocessing pipeline & stratified splitting
+
+
